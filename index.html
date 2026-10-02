@@ -120,7 +120,6 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 <p><b>禁止あがり</b><br>・2、8、ジョーカー、ジョーカーを含む2枚以上のペア出し<br>（手札が禁止上がりカードのみとなった瞬間に負けが確定する）</p>
 <p><b>機能</b><br>・タップでいつでも捨札と場に出ているカードの出し順を確認することができる。</p>
 </div><button id="rulesBack">戻る</button></section>
-<section id="series"><h1>何戦やる？</h1><div class="row"><button class="series" data-len="1">1戦</button><button class="series" data-len="2">2戦</button><button class="series" data-len="3">3戦</button><button class="series" data-len="0">無制限</button></div><button id="seriesBack" style="margin-top:14px">戻る</button></section>
 <section id="rate"><h1 class="rate-title">Rate</h1>
 <div id="rateVal" style="font-size:42px;font-weight:900;color:#e8c36a;margin:8px 0">200</div>
 <input id="rateSlide" type="range" min="100" max="1000" step="100" value="200" style="width:min(86vw,320px)" />
@@ -170,7 +169,7 @@ function suitsLock(p,c){return !!(p&&p.n===1&&c.n===1&&p.suits[0]&&c.suits[0]&&p
 function followsLock(ls,c){if(!ls||c.n!==1)return true;return c.suits[0]===ls[0]||c.rank==="jk"}
 function isForbiddenAgari(play,len){if(play.cards.length!==len)return false;if(play.jokers&&play.n>=2)return true;if(play.rank===15)return true;return false}
 const S={mode:null,me:1,host:true,seriesLen:3,rate:200,round:1,lastFlag:false,totals:[0,0,0],seriesPts:[0,0,0],lifePts:[0,0,0],pending:null,stock:[],discards:[],jokers:{1:null,2:null},hands:{1:[],2:[]},field:null,pile:[],trickPlays:[],fieldOwner:0,lock:null,back:false,turn:1,busy:false,over:false,tick:0,lockFx:0,sel:new Set(),peer:null,conn:null};
-function saveFiveHub(){const me=S.me||1;hubSave("five", (S.totals&&S.totals[me])||0);} function show(id){ try{setTimeout(syncChatVis,0)}catch(e){} ["mode","series","rate","room","game","result","first","rules"].forEach(x=>$(x).classList.toggle("on",x===id));if(id==="mode")$("mode").style.display="flex"}
+function saveFiveHub(){const me=S.me||1;hubSave("five", (S.totals&&S.totals[me])||0);} function show(id){ try{setTimeout(syncChatVis,0)}catch(e){} ["mode","rate","room","game","result","first","rules"].forEach(x=>$(x).classList.toggle("on",x===id));if(id==="mode")$("mode").style.display="flex"}
 function paintDiff(){const d=S.lifePts[S.me]||0;$("sc").textContent=d>0?"+"+d:d===0?"±0":String(d);$("sc").className="diff "+(d>0?"plus":d<0?"minus":"zero")}
 function paintRate(){if($("rateShow"))$("rateShow").textContent=String(S.rate||200)}
 function elCard(c,click){const d=document.createElement("div");d.className="card"+(isRed(c)?" red":"")+(c.j?" jk":"");d.innerHTML=c.j?`<div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">${suitMark(c)}</div>`:`<div class="r">${label(c)}</div><div class="s">${suitMark(c)}</div>`;
@@ -435,7 +434,7 @@ function ensureChatDom(){
 }
 
 function syncChatVis(){
-  const title=document.querySelector("#shellMode.on,#shellRoom.on,#shellRules.on,#mode.on,#room.on,#rules.on,#series.on,#rate.on");
+  const title=document.querySelector("#shellMode.on,#shellRoom.on,#shellRules.on,#mode.on,#room.on,#rules.on,#rate.on");
   const play=document.querySelector("#app.on,#game.on,section#game.on");
   const on=!title && !!play;
   const b=$("chatBtn"), pan=$("chatPanel");
@@ -671,7 +670,6 @@ function boot(host,code){
   });
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;S.seriesLen=3;$("mode").style.display="none";if(S.mode==="pvp")show("room");else show("rate")});
-document.querySelectorAll(".series").forEach(b=>b.onclick=()=>{S.seriesLen=Number(b.dataset.len);show("rate")});
 $("rateSlide").oninput=()=>{$("rateVal").textContent=$("rateSlide").value};
 $("rateOk").onclick=()=>{S.rate=Number($("rateSlide").value);S.seriesLen=3;paintRate();if(S.mode==="cpu"){S.me=1;S.host=true;startSeries(3)}else if(S.host&&S.conn){startSeries(3)}else if(S.host){$("roomSt").textContent="相手を待ってからレート確定";show("room")}else startSeries(3)};
 $("btnRules").onclick=()=>{$("mode").style.display="none";show("rules")};
@@ -728,8 +726,6 @@ $("field").onclick=()=>{
 };
 $("ordView").onclick=()=>$("ordView").classList.remove("on");
 </script>
-<button id="chatBtn" type="button">チャット</button>
-<div id="chatPanel"><input id="chatIn" maxlength="40" placeholder="メッセージ"/><div class="row"><button type="button" id="chatSend">送信</button></div></div>
 <div id="bubbles"></div>
 
 </body></html>
