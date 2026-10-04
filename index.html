@@ -100,11 +100,11 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 .ruleArr{color:#e8c36a;font-weight:900;font-size:13px;line-height:1;align-self:center}
 .ruleFan{display:flex;align-items:center}
 .ruleFan .card+.card{margin-left:-14px}
-.ruleX{position:relative;display:inline-flex;align-items:center}
-.ruleX::before,.ruleX::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:4px;margin-top:-2px;background:#e10600;border-radius:2px;z-index:3;pointer-events:none;box-shadow:0 0 0 1px #3a000088}
-.ruleX::before{transform:rotate(-32deg)}
-.ruleX::after{transform:rotate(32deg)}
+.ruleX{position:relative;display:inline-flex;align-items:center;overflow:hidden;vertical-align:middle}
+.ruleXsvg{position:absolute;inset:1px;width:auto;height:auto;z-index:3;pointer-events:none}
+.ruleXsvg line{stroke:#e10600;stroke-width:3.5;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .ruleGrid2{flex-direction:column;align-items:flex-start;gap:6px}
+.ruleGrid2.ruleX{align-items:flex-start}
 .ruleGridRow{display:flex;align-items:center;gap:4px}
 .rules-body .card{width:34px;height:48px;border-radius:6px;border-width:1.5px;gap:0;pointer-events:none}
 .rules-body .card .r{font-size:16px}
@@ -170,12 +170,12 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
   <div class="ruleTxt">革命無し</div>
 </div>
 <div class="ruleRow">
-  <div class="ruleCards"><span class="ruleX"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">7</div><div class="s">♦</div></div></span></div>
+  <div class="ruleCards"><span class="ruleX"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">7</div><div class="s">♦</div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="10" y1="12" x2="90" y2="88"/><line x1="90" y1="12" x2="10" y2="88"/></svg></span></div>
   <div class="ruleTxt">階段しばり無し</div>
 </div>
 <div class="ruleRow">
-  <div class="ruleCards"><span class="ruleX"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div></span></div>
-  <div class="ruleTxt">階段出し無し（例4.5.6の3枚出しは出来ない）</div>
+  <div class="ruleCards"><span class="ruleX"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="10" y1="12" x2="90" y2="88"/><line x1="90" y1="12" x2="10" y2="88"/></svg></span></div>
+  <div class="ruleTxt">階段出し無し</div>
 </div>
 <div class="ruleRow">
   <div class="ruleCards"><div class="card red" aria-hidden="true"><div class="r">9</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♥</div></div></div>
@@ -183,7 +183,7 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 </div>
 <div class="ruleHead">禁止あがり</div>
 <div class="ruleRow">
-  <div class="ruleCards ruleGrid2"><div class="ruleGridRow"><div class="card" aria-hidden="true"><div class="r">2</div><div class="s">♠</div></div><div class="card red" aria-hidden="true"><div class="r">8</div><div class="s">♥</div></div></div><div class="ruleGridRow"><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="ruleFan"><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♣</div></div></div></div></div>
+  <div class="ruleCards ruleGrid2 ruleX"><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="10" y1="12" x2="90" y2="88"/><line x1="90" y1="12" x2="10" y2="88"/></svg><div class="ruleGridRow"><div class="card" aria-hidden="true"><div class="r">2</div><div class="s">♠</div></div><div class="card red" aria-hidden="true"><div class="r">8</div><div class="s">♥</div></div></div><div class="ruleGridRow"><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="ruleFan"><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♣</div></div></div></div></div>
   <div class="ruleTxt">2、8、ジョーカー、ジョーカーを含む2枚以上のペア出し<br>（手札が禁止上がりカードのみとなった瞬間に負けが確定する）</div>
 </div>
 <div class="ruleHead">ー機能ー</div>
