@@ -376,12 +376,12 @@ function render(){
   const raw=S.hands[S.me], myShow=S.dealVis?(S.dealVis.sort?sorted(raw):raw.slice(0,S.dealVis.n)):sorted(raw);
   const h=$("hand");h.innerHTML="";
   myShow.forEach((c,i)=>{const key=c.id||("jk"+c.owner);const el=elCard(c,()=>{if(S.turn!==S.me||S.over||S.busy||S.dealVis)return;S.sel.has(key)?S.sel.delete(key):S.sel.add(key);sfxCard();render()});if(S.dealVis&&S.dealVis.sort)el.classList.add("sort-in");else if(S.dealVis&&!S.dealVis.jk&&i===myShow.length-1)el.classList.add("deal-in");h.appendChild(el)});
-  const myTurn=S.turn===S.me&&!S.over&&!S.dealVis&&!S.busy;const playBtn=$("play");playBtn.disabled=!myTurn;playBtn.style.opacity=myTurn?"1":".35";$("pass").disabled=!myTurn||!S.field;
+  const myTurn=S.turn===S.me&&!S.over&&!S.dealVis&&!S.busy&&!S.passLock;const playBtn=$("play");playBtn.disabled=!myTurn;playBtn.style.opacity=myTurn?"1":".35";$("pass").disabled=!myTurn||!S.field||!!S.passLock;
   const paintJk=(id,who,can)=>{const box=$(id);box.innerHTML="";const jk=S.jokers[who];if(!jk||(S.dealVis&&!S.dealVis.jk))return;const el=elCard(jk,can?()=>{if(S.turn!==S.me||S.over||S.busy)return;const k="jk"+who;S.sel.has(k)?S.sel.delete(k):S.sel.add(k);sfxCard();render()}:null);if(S.sel.has("jk"+who))el.classList.add("sel");box.appendChild(el)};
   paintJk("jkMine",S.me,true);paintJk("jkOpp",S.me===1?2:1,false);
 }
 function collectToDiscard(){[1,2].forEach(p=>{(S.hands[p]||[]).forEach(c=>{if(!c.j)S.discards.push(c)});S.hands[p]=[]});(S.pile&&S.pile.length?S.pile:(S.field?S.field.cards:[])).forEach(c=>{if(!c.j)S.discards.push(c)});S.field=null;S.pile=[]}
-function dealRound(){collectToDiscard();if(S.stock.length<10){S.stock=shuffle(S.stock.concat(S.discards));S.discards=[]}S.hands[1]=S.stock.splice(0,5);S.hands[2]=S.stock.splice(0,5);S.jokers[1]={j:true,owner:1,id:"jk1"};S.jokers[2]={j:true,owner:2,id:"jk2"};S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.sel.clear()}
+function dealRound(){collectToDiscard();if(S.stock.length<10){S.stock=shuffle(S.stock.concat(S.discards));S.discards=[]}S.hands[1]=S.stock.splice(0,5);S.hands[2]=S.stock.splice(0,5);S.jokers[1]={j:true,owner:1,id:"jk1"};S.jokers[2]={j:true,owner:2,id:"jk2"};S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.passLock=false;S.sel.clear()}
 function selectedCards(){const cs=S.hands[S.me].filter(c=>S.sel.has(c.id));if(S.sel.has("jk"+S.me)&&S.jokers[S.me])cs.push(S.jokers[S.me]);return cs}
 function flushField(){(S.pile.length?S.pile:(S.field?S.field.cards:[])).forEach(c=>{if(!c.j)S.discards.push(c)});S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false}
 function flushWithAnim(then){const f=$("field");[...f.querySelectorAll(".card")].forEach(el=>{if(el.classList.contains("jk")){el.style.transition="opacity .35s";el.style.opacity="0"}else el.classList.add("to-disc")});setTimeout(()=>{flushField();if(then)then();render()},460)}
@@ -446,7 +446,7 @@ if(play&&play.cards)play.cards.forEach(c=>{if(c&&(c.j||play.rank==="jk"))c.j=tru
   return null;
 }
 function playSel(){if(S.busy||S.over)return;const play=groupPlay(selectedCards());const err=legal(play);if(err){$("info").textContent=err;return}if(S.field&&play.rank!=="jk"&&!play.jokers&&suitsLock(S.field,play))setLock(play);const res=applyPlay(S.me,play);S.sel.clear();if(S.mode==="pvp"&&S.host)sendAct({type:"play",play,who:S.me});sync();afterPlay(res)}
-function doPass(){if(!S.field||S.busy||S.over)return;S.sel.clear();render();const lead=S.fieldOwner,held=S.field,tick=++S.tick;S.turn=lead;S.busy=true;S.lastAct={kind:"pass",who:S.me,n:Date.now()};if(S.mode==="pvp")sendAct({type:"pass",who:S.me});showBanner("パス");setTimeout(()=>{if(tick!==S.tick||S.field!==held){S.busy=false;render();return}flushWithAnim(()=>{S.busy=false;const sl=checkDead();if(sl){sync();delayForbidden(sl);return}sync();if(S.mode==="cpu"&&S.turn===2)setTimeout(cpuTurn,450)})},500)}
+function doPass(){if(!S.field||S.busy||S.over||S.turn!==S.me||S.passLock)return;S.passLock=true;S.busy=true;const btn=$("pass");if(btn)btn.disabled=true;S.sel.clear();const lead=S.fieldOwner,held=S.field,tick=++S.tick;S.turn=lead;S.lastAct={kind:"pass",who:S.me,n:Date.now()};if(S.mode==="pvp")sendAct({type:"pass",who:S.me});showBanner("パス");render();setTimeout(()=>{const unlock=()=>{S.passLock=false};if(tick!==S.tick||S.field!==held){S.busy=false;unlock();render();return}flushWithAnim(()=>{S.busy=false;unlock();const sl=checkDead();if(sl){sync();delayForbidden(sl);return}sync();if(S.mode==="cpu"&&S.turn===2)setTimeout(cpuTurn,450)})},500)}
 function allCombos(who){const hand=S.hands[who].slice();if(S.jokers[who])hand.push(S.jokers[who]);const out=[],n=hand.length;for(let m=1;m<(1<<n);m++){const cs=[];for(let i=0;i<n;i++)if(m&(1<<i))cs.push(hand[i]);if(cs.length<=4&&groupPlay(cs))out.push(cs)}out.sort((a,b)=>a.length-b.length);return out}
 function cpuThink(then){
   if(S.over||S.busy||S.turn!==2) return;
@@ -679,7 +679,7 @@ async function startMatch(){ S.handGen=(S.handGen||0)+1; S.dealing=false; S.deal
   sync();
   if(S.mode==="cpu"&&S.turn===2)setTimeout(cpuTurn,400);
 }
-function resetTable(){S.handGen=(S.handGen||0)+1;S.hands={1:[],2:[]};S.jokers={1:null,2:null};S.field=null;S.pile=[];S.discards=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.sel=new Set();S.pending=null;S.dealVis=null;S.sawResult=false}
+function resetTable(){S.handGen=(S.handGen||0)+1;S.hands={1:[],2:[]};S.jokers={1:null,2:null};S.field=null;S.pile=[];S.discards=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.passLock=false;S.sel=new Set();S.pending=null;S.dealVis=null;S.sawResult=false}
 function startSeries(len,keepPts){resetTable();S.lastWinner=null;S.seriesPts=[0,0,0];if(!keepPts){S.totals=[0,0,0];S.lifePts=[0,0,0]}S.seriesLen=3;S.round=1;S.stock=shuffle(makeFull());S.lastFlag=false;if(S.mode==="pvp"&&S.host===false)return;startMatch()}
 function snap(){return{type:"snap",stock:S.stock,discards:S.discards,jokers:S.jokers,hands:S.hands,field:S.field,pile:S.pile,trickPlays:S.trickPlays||[],fieldOwner:S.fieldOwner,lock:S.lock,back:S.back,turn:S.turn,over:S.over,pending:S.pending,lastAct:S.lastAct||null,totals:S.totals,seriesPts:S.seriesPts,lifePts:S.lifePts,round:S.round,seriesLen:S.seriesLen,rate:S.rate}}
 function showAct(m){
