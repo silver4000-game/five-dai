@@ -97,6 +97,7 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 .ruleRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:8px;background:#0a181066;border-radius:12px;border:1px solid #e8c36a33}
 .ruleCards{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;max-width:100%}
 .ruleTxt{flex:1;min-width:min(100%,148px);line-height:1.55;text-align:center}
+.ruleNo{color:#ff4d4d;font-weight:900}.ruleYes{color:#3ddc6a;font-weight:900}
 .ruleArr{color:#e8c36a;font-weight:900;font-size:13px;line-height:1;align-self:center}
 .ruleFan{display:flex;align-items:center}
 .ruleFan .card+.card{margin-left:-14px}
@@ -175,19 +176,19 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 <div class="ruleHead">ー特殊ルールー</div>
 <div class="ruleRow">
   <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">K</div><div class="s">♠</div></div><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♥</div></div><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♦</div></div><div class="card" aria-hidden="true"><div class="r">K</div><div class="s">♣</div></div></div>
-  <div class="ruleTxt">革命効果無し</div>
+  <div class="ruleTxt">革命効果<span class="ruleNo">無し</span></div>
 </div>
 <div class="ruleRow">
   <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card any" aria-hidden="true">何でも</div></div>
-  <div class="ruleTxt">階段しばり無し</div>
+  <div class="ruleTxt">階段しばり<span class="ruleNo">無し</span></div>
 </div>
 <div class="ruleRow">
   <div class="ruleCards"><span class="ruleX ruleXsq"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><line x1="12" y1="12" x2="88" y2="88"/><line x1="88" y1="12" x2="12" y2="88"/></svg></span></div>
-  <div class="ruleTxt">階段出し無し</div>
+  <div class="ruleTxt">階段出し<span class="ruleNo">無し</span></div>
 </div>
 <div class="ruleRow">
   <div class="ruleCards"><div class="card red" aria-hidden="true"><div class="r">9</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♥</div></div></div>
-  <div class="ruleTxt">マーク縛り有り（単独のみ）</div>
+  <div class="ruleTxt">マーク縛り<span class="ruleYes">有り</span>（単独のみ）</div>
 </div>
 <div class="ruleHead">ー禁止あがりー</div>
 <div class="ruleRow">
