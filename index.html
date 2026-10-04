@@ -2,10 +2,10 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-layout: safari-bar-lock-20261004 -->
-<meta name="five-dai-rev" content="20261004-safari-lock">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004b">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004b">
+<!-- five-dai-layout: safari-bar-lock-20261004c -->
+<meta name="five-dai-rev" content="20261004c-safari-lock">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004c">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004c">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -55,10 +55,21 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
    Pin the whole app to the Safari-with-bar height. Extra space stays the green page background.
    --safari-bar: 83px on home-indicator iPhones (the white bar), 50px on older phones. */
 html.no-bar #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
+/* 先行/後攻 overlay is flat #142c22. The strip under the locked app was the radial gradient, a different green. */
+html.no-bar:has(#first.on),
+html.no-bar:has(#first.on) body{background:#142c22}
+html.no-bar #first.on{background:#142c22}
+html.no-bar #chatBtn{bottom:calc(18px + var(--safari-bar, 83px))}
+html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 @media (display-mode: standalone) and (pointer: coarse),
        (display-mode: fullscreen) and (pointer: coarse),
        (display-mode: minimal-ui) and (pointer: coarse){
   #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
+  html:has(#first.on),
+  html:has(#first.on) body{background:#142c22}
+  #first.on{background:#142c22}
+  #chatBtn{bottom:calc(18px + var(--safari-bar, 83px))}
+  #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 }
 .banner{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:32px;font-weight:900;color:#e8c36a;z-index:70;pointer-events:none;white-space:nowrap;padding:10px 22px;border:3px solid #e8c36a;border-radius:14px;background:#0a1810ee}
 .banner.on{display:block;animation:banPop 1.2s ease-out forwards}
