@@ -84,8 +84,27 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 #first .w{font-size:48px;font-weight:900;letter-spacing:.16em;white-space:nowrap;padding:12px 28px;border:3px solid currentColor;border-radius:16px;background:#0a1810ee}
 #first .w.first{color:#ffb347}#first .w.second{color:#7a8cff}#first .w.draw{color:#e8c36a}
 #first .rnd-first{font-size:16px;font-weight:800;color:#e8c36a;margin-bottom:12px}
-#rules{justify-content:flex-start;padding-top:24px;overflow:auto}
-.rules-body{width:min(92vw,360px);font-size:13px;line-height:1.55;text-align:left}
+#rules{justify-content:flex-start;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));overflow:auto;-webkit-overflow-scrolling:touch}
+#rules h1{margin:4px 0 6px;font-size:34px}
+#rules>button{margin-top:12px;flex:none}
+.rules-body{width:min(92vw,380px);font-size:13px;line-height:1.55;text-align:left;padding-bottom:4px}
+.ruleHead{margin:28px 0 6px;font-weight:900;font-size:15px;color:#e8c36a;text-align:center}
+.rules-body>p{margin:6px 0}
+.ruleSteps{margin:8px 0 12px}
+.ruleStep{display:flex;align-items:flex-start;gap:6px;margin:8px 0}
+.ruleNum{flex:none;line-height:1.55;font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-weight:900;font-size:15px;color:#e8c36a;min-width:1.2em}
+.ruleStepBody{flex:1;min-width:0;line-height:1.55}
+.ruleRow{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin:10px 0;padding:8px;background:#0a181066;border-radius:12px;border:1px solid #e8c36a33}
+.ruleCards{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;max-width:100%}
+.ruleTxt{flex:1;min-width:min(100%,148px);line-height:1.55}
+.ruleArr{color:#e8c36a;font-weight:900;font-size:13px;line-height:1;align-self:center}
+.ruleFan{display:flex;align-items:center}
+.ruleFan .card+.card{margin-left:-14px}
+.rules-body .card{width:34px;height:48px;border-radius:6px;border-width:1.5px;gap:0;pointer-events:none}
+.rules-body .card .r{font-size:16px}
+.rules-body .card .s{font-size:11px}
+.rules-body .card.jk .r{font-size:12px;letter-spacing:-1px}
+.rules-body .card.jk .s{font-size:11px}
 
 
 .rate-title{display:inline-block;padding:8px 22px;border:3px solid #7a8cff;border-radius:14px;color:#7a8cff;background:#0a1810ee}
@@ -115,12 +134,56 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 <div class="hero"><div class="card jk"><div class="r"><span style="color:#c0392b">J</span><span>K</span></div><div class="s">★</div></div></div>
 <div class="ui"><div class="row"><button data-mode="pvp">対人戦</button><button data-mode="cpu">コンピュータ戦</button></div><button id="btnRules" style="margin-top:14px;min-height:36px;font-size:13px">ルール説明</button></div></section>
 <section id="rules"><h1>ルール</h1><div class="rules-body">
-<p><b>ルール</b><br>・5枚＋ジョーカー　の計6枚で大富豪勝負。<br>・勝ったプレイヤーは負けたプレイヤーの残り手札枚数（ジョーカー含む）×設定rate ＝ポイントを獲得。<br>・使用したトランプは山札に戻さず3回戦行う。</p>
-<p><b>細かいルール</b><br>・通常トランプの山札を使う。<br>・前回負けたプレイヤーが先行になる。</p>
-<p><b>特殊役</b><br>・8切り<br>・3返し　（マーク関係なく［3］であれば単独出しのジョーカーを返せる）<br>・Jバック（強制）</p>
-<p><b>特殊ルール</b><br>・革命無し<br>・階段しばり無し（例4→5→の順で次に6以外の勝てるカードでも出すことが出来る）<br>・階段出し無し（例4.5.6の3枚出しは出来ない）<br>・マーク縛り有り（単独のみ）</p>
-<p><b>禁止あがり</b><br>・2、8、ジョーカー、ジョーカーを含む2枚以上のペア出し<br>（手札が禁止上がりカードのみとなった瞬間に負けが確定する）</p>
-<p><b>機能</b><br>・タップでいつでも捨札と場に出ているカードの出し順を確認することができる。</p>
+<div class="ruleHead" style="margin-top:10px">ー流れー</div>
+<div class="ruleSteps">
+  <div class="ruleStep"><span class="ruleNum">1</span><div class="ruleStepBody">5枚＋ジョーカー の計6枚で大富豪勝負</div></div>
+  <div class="ruleStep"><span class="ruleNum">2</span><div class="ruleStepBody">勝ったプレイヤーは負けたプレイヤーの残り手札枚数分のポイントを獲得</div></div>
+  <div class="ruleStep"><span class="ruleNum">3</span><div class="ruleStepBody">3戦で1セット</div></div>
+</div>
+<div class="ruleHead">ー細かいルールー</div>
+<div class="ruleSteps">
+  <div class="ruleStep"><span class="ruleNum">1</span><div class="ruleStepBody">1セット終わるまで使用したトランプは山札に戻さない</div></div>
+  <div class="ruleStep"><span class="ruleNum">2</span><div class="ruleStepBody">前回負けたプレイヤーが先行になる</div></div>
+</div>
+<div class="ruleHead">ー特殊役ー</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">8</div><div class="s">♠</div></div></div>
+  <div class="ruleTxt">8切り</div>
+</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card red" aria-hidden="true"><div class="r">3</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div></div>
+  <div class="ruleTxt">3返し（マーク関係なく［3］であれば単独出しのジョーカーを返せる）</div>
+</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">J</div><div class="s">♠</div></div></div>
+  <div class="ruleTxt">Jバック（強制）</div>
+</div>
+<div class="ruleHead">特殊ルール</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">K</div><div class="s">♠</div></div><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♥</div></div><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♦</div></div><div class="card" aria-hidden="true"><div class="r">K</div><div class="s">♣</div></div></div>
+  <div class="ruleTxt">革命無し</div>
+</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">7</div><div class="s">♦</div></div></div>
+  <div class="ruleTxt">階段しばり無し（例4→5→の順で次に6以外の勝てるカードでも出すことが出来る）</div>
+</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div></div>
+  <div class="ruleTxt">階段出し無し（例4.5.6の3枚出しは出来ない）</div>
+</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card red" aria-hidden="true"><div class="r">9</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">K</div><div class="s">♥</div></div></div>
+  <div class="ruleTxt">マーク縛り有り（単独のみ）</div>
+</div>
+<div class="ruleHead">禁止あがり</div>
+<div class="ruleRow">
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">2</div><div class="s">♠</div></div><div class="card red" aria-hidden="true"><div class="r">8</div><div class="s">♥</div></div><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="ruleFan"><div class="card jk" aria-hidden="true"><div class="r"><span style="color:#c0392b">J</span><span style="color:#1a1208">K</span></div><div class="s">★</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♣</div></div></div></div>
+  <div class="ruleTxt">2、8、ジョーカー、ジョーカーを含む2枚以上のペア出し<br>（手札が禁止上がりカードのみとなった瞬間に負けが確定する）</div>
+</div>
+<div class="ruleHead">ー機能ー</div>
+<div class="ruleSteps">
+  <div class="ruleStep"><span class="ruleNum">1</span><div class="ruleStepBody">タップでいつでも捨札と場に出ているカードの出し順を確認することができる。</div></div>
+</div>
 </div><button id="rulesBack">戻る</button></section>
 <section id="rate"><h1 class="rate-title">Rate</h1>
 <div id="rateVal" style="font-size:42px;font-weight:900;color:#e8c36a;margin:8px 0">200</div>
