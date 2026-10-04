@@ -35,6 +35,10 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 .hand{height:110px;min-height:110px;flex:none;padding:12px 4px 8px;margin-top:6px}
 .field{min-height:104px;flex:none}
 .board{flex:1 1 0;min-height:168px;overflow:hidden}
+/* Safari layout chrome outside the board: game padding 18, topbar 40, opp 52, board margins 16, hand 116, buttons 54 */
+@media (display-mode: standalone), (display-mode: fullscreen){
+  .board{flex:0 0 auto;height:calc(100dvh - 296px - 50px);max-height:calc(100dvh - 296px - 50px)}
+}
 .banner{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:32px;font-weight:900;color:#e8c36a;z-index:70;pointer-events:none;white-space:nowrap;padding:10px 22px;border:3px solid #e8c36a;border-radius:14px;background:#0a1810ee}
 .banner.on{display:block;animation:banPop 1.2s ease-out forwards}
 @keyframes banPop{0%{transform:translate(-50%,-50%) scale(.55);opacity:0}12%{transform:translate(-50%,-50%) scale(1.05);opacity:1}82%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
