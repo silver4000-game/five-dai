@@ -59,6 +59,9 @@ html.no-bar #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(1
 html.no-bar:has(#first.on),
 html.no-bar:has(#first.on) body{background:#142c22}
 html.no-bar #first.on{background:#142c22}
+html.no-bar:has(#result.on),
+html.no-bar:has(#result.on) body{background:#0a100c}
+html.no-bar #result.on{background:#0a100c}
 html.no-bar #chatBtn{bottom:calc(18px + var(--safari-bar, 83px))}
 html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 @media (display-mode: standalone) and (pointer: coarse),
@@ -68,6 +71,9 @@ html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
   html:has(#first.on),
   html:has(#first.on) body{background:#142c22}
   #first.on{background:#142c22}
+  html:has(#result.on),
+  html:has(#result.on) body{background:#0a100c}
+  #result.on{background:#0a100c}
   #chatBtn{bottom:calc(18px + var(--safari-bar, 83px))}
   #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 }
@@ -450,7 +456,8 @@ function cpuThink(then){
 }
 function forbFinish(play,left){
   if(!play||play.cards.length!==left) return false;
-  if(play.rank===15||play.rank===8||play.rank==="jk"||play.jokers) return true;
+  if(play.rank===15||play.rank===8||play.rank==="jk") return true;
+  if(play.jokers) return true;
   return isForbiddenAgari(play,left);
 }
 function cpuStrength(play){
@@ -458,6 +465,16 @@ function cpuStrength(play){
   if(play.rank==="jk") return 20;
   const u=S.back||(S.field&&S.field.rank===11);
   return stren({r:play.rank},u)+(play.n>1?play.n:0);
+}
+function handAfter(who,play){
+  const ids=new Set((play.cards||[]).map(c=>c.id));
+  const rest=(S.hands[who]||[]).filter(c=>!ids.has(c.id));
+  if(S.jokers[who]&&!(play.cards||[]).some(c=>c.j)) rest.push(S.jokers[who]);
+  return rest;
+}
+function leavesOnlyDead(who,play){
+  const rest=handAfter(who,play);
+  return rest.length>0&&rest.every(c=>c.j||c.r===8||c.r===15);
 }
 function cpuPick(){
   const me=2, opp=1;
@@ -471,8 +488,11 @@ function cpuPick(){
     cands.push(play);
   }
   if(!cands.length) return null;
+  const safe=cands.filter(p=>!leavesOnlyDead(me,p));
+  if(!safe.length&&S.field) return null;
+  const pool=safe.length?safe:cands;
   const lead=!S.field;
-  const canWin=cands.filter(p=>p.cards.length===myN);
+  const canWin=pool.filter(p=>p.cards.length===myN);
   if(canWin.length) return canWin.sort((a,b)=>a.n-b.n)[0];
   function score(p){
     let s=0;
@@ -506,14 +526,14 @@ function cpuPick(){
     if(oppN<=2&&p.n===1&&st<10) s-=10;
     return s;
   }
-  cands.sort((a,b)=>score(b)-score(a));
-  const best=cands[0], bs=score(best);
+  pool.sort((a,b)=>score(b)-score(a));
+  const best=pool[0], bs=score(best);
   if(S.field&&oppN>=4&&myN>=4&&bs<4&&cpuStrength(best)>=14) return null;
   if(S.field&&!lead&&rareOnly(best)&&oppN>=3&&myN>=3&&Math.random()<0.35) return null;
   return best;
   function rareOnly(p){return p.rank===15||p.rank==="jk"||(p.rank===8&&oppN>3)}
 }
-function cpuTurn(){if(S.over||S.busy||S.turn!==2)return;cpuThink(()=>{const choice=cpuPick();if(!choice){if(S.field)doPassAs(2);else{const fb=allCombos(2).map(groupPlay).find(p=>p&&!legal(p,2)&&!forbFinish(p,remaining(2)));if(fb){if(S.field&&fb.rank!=="jk"&&!fb.jokers&&suitsLock(S.field,fb))setLock(fb);afterPlay(applyPlay(2,fb))}else doPassAs(2);}return}if(S.field&&choice.rank!=="jk"&&!choice.jokers&&suitsLock(S.field,choice))setLock(choice);afterPlay(applyPlay(2,choice))});}
+function cpuTurn(){if(S.over||S.busy||S.turn!==2)return;const sl0=stuckLose(2);if(sl0){delayForbidden(sl0);return}cpuThink(()=>{const choice=cpuPick();if(!choice){if(S.field)doPassAs(2);else{const fb=allCombos(2).map(groupPlay).find(p=>p&&!legal(p,2)&&!forbFinish(p,remaining(2)));if(fb){if(S.field&&fb.rank!=="jk"&&!fb.jokers&&suitsLock(S.field,fb))setLock(fb);afterPlay(applyPlay(2,fb))}else doPassAs(2);}return}if(S.field&&choice.rank!=="jk"&&!choice.jokers&&suitsLock(S.field,choice))setLock(choice);afterPlay(applyPlay(2,choice))});}
 function doPassAs(who){if(!S.field||S.over)return;const lead=S.fieldOwner||who,held=S.field,tick=++S.tick;S.turn=lead;S.busy=true;S.lastAct={kind:"pass",who:who};showBanner("パス");setTimeout(()=>{if(tick!==S.tick||S.field!==held){S.busy=false;render();sync();return}flushWithAnim(()=>{S.busy=false;sync();const sl=checkDead();if(sl)delayForbidden(sl);})},900)}
 function afterPlay(res){render();if(!res){const sl=checkDead();if(sl){const gen=S.handGen||0;setTimeout(()=>{if((S.handGen||0)!==gen)return;showBanner("禁止上がり");setTimeout(()=>{if((S.handGen||0)!==gen||S.sawResult)return;endHand(sl)},1000)},700)}else if(S.mode==="cpu"&&S.turn===2&&!S.over)setTimeout(cpuTurn,500);return}const gen=S.handGen||0;setTimeout(()=>{if((S.handGen||0)!==gen||S.sawResult)return;endHand(res)},750)}
 function endHand(res){if(!res||S.sawResult)return;S.sawResult=true;S.lastWinner=res.win;const myWin=res.win===S.me,loser=res.win===1?2:1;$("rTitle").textContent=res.forbidden?(myWin?"禁止上がり勝ち":"禁止上がり負け"):(myWin?"Win":"Lose");$("rTitle").style.fontSize=res.forbidden?"26px":"44px";$("rTitle").style.color=myWin?"#ffb347":"#7a8cff";const box=$("rLeft");box.innerHTML="";const left=(S.hands[loser]||[]).slice();if(S.jokers[loser])left.push(S.jokers[loser]);const grid=document.createElement("div");grid.className="r-grid";sorted(left).forEach(c=>grid.appendChild(elCard(c)));const n=left.length||Math.round(res.pts/(S.rate||200));const cnt=document.createElement("div");cnt.className="cnt";cnt.textContent=n+"枚";grid.appendChild(cnt);box.appendChild(grid);const eq=document.createElement("div");eq.className="eq";const sign=myWin?"+":"-";eq.innerHTML=`<span></span><span class="tot ${myWin?"plus":"minus"}">${sign}${res.pts}</span><span></span>`;box.appendChild(eq);const done=S.round>=3||S.lastFlag;$("next").style.display=done?"none":"inline-block";$("final").style.display=done?"inline-block":"none";$("home").style.display="none";$("again").style.display="none";if($("endShow"))$("endShow").style.display="none";$("next").textContent="次のゲーム";S.votes={next:{},again:{}};show("result")}
