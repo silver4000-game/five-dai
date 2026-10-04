@@ -103,6 +103,7 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 .ruleX{position:relative;display:inline-flex;align-items:center;overflow:visible;vertical-align:middle}
 .ruleXsvg{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}
 .ruleXsvg line{stroke:#e10600;stroke-width:9;stroke-opacity:.48;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.ruleXsq .ruleXsvg{inset:auto;left:50%;top:50%;width:auto;height:100%;aspect-ratio:1;transform:translate(-50%,-50%)}
 .ruleGrid2{flex-direction:column;align-items:flex-start;gap:6px}
 .ruleGrid2.ruleX{align-items:flex-start}
 .ruleGridRow{display:flex;align-items:center;gap:4px}
@@ -176,11 +177,11 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
   <div class="ruleTxt">革命無し</div>
 </div>
 <div class="ruleRow">
-  <div class="ruleCards"><span class="ruleX"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">6</div><div class="s">♦</div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="22" y1="26" x2="78" y2="74"/><line x1="78" y1="26" x2="22" y2="74"/></svg></span></div>
+  <div class="ruleCards"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">5</div><div class="s">♥</div></div><span class="ruleArr" aria-hidden="true">→</span><div class="card red" aria-hidden="true"><div class="r">6</div><div class="s">♦</div></div></div>
   <div class="ruleTxt">階段しばり無し</div>
 </div>
 <div class="ruleRow">
-  <div class="ruleCards"><span class="ruleX"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="22" y1="26" x2="78" y2="74"/><line x1="78" y1="26" x2="22" y2="74"/></svg></span></div>
+  <div class="ruleCards"><span class="ruleX ruleXsq"><div class="ruleFan"><div class="card" aria-hidden="true"><div class="r">4</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">5</div><div class="s">♠</div></div><div class="card" aria-hidden="true"><div class="r">6</div><div class="s">♠</div></div></div><svg class="ruleXsvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><line x1="12" y1="12" x2="88" y2="88"/><line x1="88" y1="12" x2="12" y2="88"/></svg></span></div>
   <div class="ruleTxt">階段出し無し</div>
 </div>
 <div class="ruleRow">
