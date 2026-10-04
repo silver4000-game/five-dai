@@ -2,10 +2,26 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- five-dai-layout: safari-bar-lock-20261004 -->
+<meta name="five-dai-rev" content="20261004-safari-lock">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004b">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004b">
+<script>
+(function(){
+  var nav=navigator, mm=window.matchMedia;
+  function q(s){return !!(mm&&mm.call(window,s).matches)}
+  var hs=nav.standalone===true||q('(display-mode: standalone)')||q('(display-mode: fullscreen)')||q('(display-mode: minimal-ui)');
+  if(!hs||!(nav.maxTouchPoints>0)) return;
+  var shortSide=Math.min(screen.width,screen.height);
+  var longSide=Math.max(screen.width,screen.height);
+  var portrait=window.innerHeight>=window.innerWidth;
+  var bar=(shortSide<520&&longSide>=812)?(portrait?83:50):(portrait?50:44);
+  document.documentElement.classList.add('no-bar');
+  document.documentElement.style.setProperty('--safari-bar', bar+'px');
+})();
+</script>
 <title>5枚大富豪</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap&v=20261004b" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -35,9 +51,14 @@ input{width:min(92vw,280px);padding:12px;border-radius:12px;border:1px solid #e8
 .hand{height:110px;min-height:110px;flex:none;padding:12px 4px 8px;margin-top:6px}
 .field{min-height:104px;flex:none}
 .board{flex:1 1 0;min-height:168px;overflow:hidden}
-/* Safari layout chrome outside the board: game padding 18, topbar 40, opp 52, board margins 16, hand 116, buttons 54 */
-@media (display-mode: standalone), (display-mode: fullscreen){
-  .board{flex:0 0 auto;height:calc(100dvh - 296px - 50px);max-height:calc(100dvh - 296px - 50px)}
+/* Home screen has no white Safari bar, so the viewport is taller than Safari.
+   Pin the whole app to the Safari-with-bar height. Extra space stays the green page background.
+   --safari-bar: 83px on home-indicator iPhones (the white bar), 50px on older phones. */
+html.no-bar #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
+@media (display-mode: standalone) and (pointer: coarse),
+       (display-mode: fullscreen) and (pointer: coarse),
+       (display-mode: minimal-ui) and (pointer: coarse){
+  #app{height:calc(100dvh - var(--safari-bar, 83px));max-height:calc(100dvh - var(--safari-bar, 83px))}
 }
 .banner{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:32px;font-weight:900;color:#e8c36a;z-index:70;pointer-events:none;white-space:nowrap;padding:10px 22px;border:3px solid #e8c36a;border-radius:14px;background:#0a1810ee}
 .banner.on{display:block;animation:banPop 1.2s ease-out forwards}
