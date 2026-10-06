@@ -2,10 +2,10 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-rev: 20261007a-cpu-jk -->
-<meta name="five-dai-rev" content="20261007a-cpu-jk">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007a">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007a">
+<!-- five-dai-rev: 20261007b-cpu-3jk -->
+<meta name="five-dai-rev" content="20261007b-cpu-3jk">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007b">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007b">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -381,9 +381,9 @@ function render(){
   paintJk("jkMine",S.me,true);paintJk("jkOpp",S.me===1?2:1,false);
 }
 function collectToDiscard(){[1,2].forEach(p=>{(S.hands[p]||[]).forEach(c=>{if(!c.j)S.discards.push(c)});S.hands[p]=[]});(S.pile&&S.pile.length?S.pile:(S.field?S.field.cards:[])).forEach(c=>{if(!c.j)S.discards.push(c)});S.field=null;S.pile=[]}
-function dealRound(){collectToDiscard();if(S.stock.length<10){S.stock=shuffle(S.stock.concat(S.discards));S.discards=[]}S.hands[1]=S.stock.splice(0,5);S.hands[2]=S.stock.splice(0,5);S.jokers[1]={j:true,owner:1,id:"jk1"};S.jokers[2]={j:true,owner:2,id:"jk2"};S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.passLock=false;S.sel.clear()}
+function dealRound(){collectToDiscard();if(S.stock.length<10){S.stock=shuffle(S.stock.concat(S.discards));S.discards=[]}S.hands[1]=S.stock.splice(0,5);S.hands[2]=S.stock.splice(0,5);S.jokers[1]={j:true,owner:1,id:"jk1"};S.jokers[2]={j:true,owner:2,id:"jk2"};S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false;S.cpuBait3=false;S.over=false;S.busy=false;S.passLock=false;S.sel.clear()}
 function selectedCards(){const cs=S.hands[S.me].filter(c=>S.sel.has(c.id));if(S.sel.has("jk"+S.me)&&S.jokers[S.me])cs.push(S.jokers[S.me]);return cs}
-function flushField(){(S.pile.length?S.pile:(S.field?S.field.cards:[])).forEach(c=>{if(!c.j)S.discards.push(c)});S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false}
+function flushField(){(S.pile.length?S.pile:(S.field?S.field.cards:[])).forEach(c=>{if(!c.j)S.discards.push(c)});S.field=null;S.pile=[];S.trickPlays=[];S.lock=null;S.back=false;S.cpuBait3=false}
 function flushWithAnim(then){const f=$("field");[...f.querySelectorAll(".card")].forEach(el=>{if(el.classList.contains("jk")){el.style.transition="opacity .35s";el.style.opacity="0"}else el.classList.add("to-disc")});setTimeout(()=>{flushField();if(then)then();render()},460)}
 function lockText(s){if(!s||!s.length)return"しばり";const mark=x=>(SUITS.find(z=>z[0]===x)||["","?"])[1];return[...new Set(s)].map(mark).join("")+"しばり"}
 function showBanner(t){
@@ -477,7 +477,7 @@ function leavesOnlyDead(who,play){
   const rest=handAfter(who,play);
   return rest.length>0&&rest.every(c=>c.j||c.r===8||c.r===15);
 }
-function handFlex(rest){
+function handFlex(rest,backOn){
   let s=0; const ranks={};
   rest.forEach(c=>{
     if(c.j){s+=4; return}
@@ -487,10 +487,15 @@ function handFlex(rest){
     const n=ranks[k], r=+k;
     if(n>=2) s+=n*5;
     else if(r===8||r===15) s-=3;
+    else if(backOn&&r<=6) s+=5; // バック中は小さい札が攻め札
     else if(r<=7) s+=3;
     else s+=1;
   });
   return s;
+}
+function keepHas3(rest){return rest.some(c=>!c.j&&c.r===3)}
+function isBaitStrong(play){
+  return !!(play&&play.n===1&&!usesJoker(play)&&(play.rank===15||play.rank===14));
 }
 function cpuPick(){
   const me=2, opp=1;
@@ -512,6 +517,10 @@ function cpuPick(){
   if(canWin.length) return canWin.sort((a,b)=>a.n-b.n)[0];
   const nonJk=pool.filter(p=>!usesJoker(p));
   const soft=nonJk.filter(p=>cpuStrength(p)<=12&&p.rank!==15);
+  const backOn=!!(S.back||(S.field&&S.field.rank===11));
+  const handHas3=(S.hands[me]||[]).some(c=>c.r===3);
+  // ときどきだけ3返し狙い（毎手同じ動きにしない）
+  const baitMood=handHas3&&myN>=3&&oppN>=2&&Math.random()<(S.cpuBait3?0.7:0.4);
   function score(p){
     let s=0;
     const left=myN-p.cards.length;
@@ -520,12 +529,14 @@ function cpuPick(){
     const rare=p.rank===15||p.rank===8||p.rank==="jk"||p.rank===11;
     const rest=handAfter(me,p);
     const need=S.field?S.field.n:0;
+    const keep3=keepHas3(rest);
+    const play3=p.rank===3&&p.n===1&&!jk;
     s+=p.n*5;
-    s+=handFlex(rest)*2.2;
+    s+=handFlex(rest,backOn)*2.2;
     if(p.n>=2&&!jk) s+=14+p.n*7;
     if(p.n>=2&&jk) s+=4+p.n*3;
     if(lead){
-      s-=st*0.9;
+      s-=st*(backOn?0.35:0.9);
       if(jk){
         // 先行でジョーカーは基本温存。枚数合わせのまとめ出しや終盤のみ検討
         if(p.rank==="jk") s-=55;
@@ -535,12 +546,22 @@ function cpuPick(){
         if(oppN<=2) s+=18;
         if(p.n>=3) s+=12;
       } else if(rare){
-        s-=28;
-        if(p.rank===15) s-=20;
+        // 3返し誘いで2/Aを出すときは温存ペナルティを緩和
+        if(!(baitMood&&isBaitStrong(p)&&keep3)){
+          s-=28;
+          if(p.rank===15) s-=20;
+        }
       }
       if(p.rank===8&&myN<=4) s+=32;
       if(p.rank===11) s-=12;
       if(!jk&&p.n===1&&st<=8) s+=10;
+      // 3返し狙い: 2やAを出してジョーカーを誘う。3は温存
+      if(baitMood){
+        if(isBaitStrong(p)&&keep3) s+=48;
+        if(play3&&myN>=3) s-=42;
+      } else if(handHas3&&play3&&myN>=4&&Math.random()<0.35){
+        s-=12; // 平常時もたまに3を残す
+      }
     } else {
       s+=8;
       if(oppN<=2){
@@ -550,10 +571,17 @@ function cpuPick(){
         s+=st*1.0;
         if(jk) s+=4;
       } else {
-        s-=st*0.55;
+        s-=st*(backOn?0.15:0.55);
       }
       if(p.rank===8) s+=oppN<=3?48:16;
-      if(p.rank===3&&S.field&&S.field.rank==="jk") s+=55;
+      if(play3&&S.field&&S.field.rank==="jk"){
+        s+=55;
+        if(S.cpuBait3||baitMood) s+=28; // 誘い成功なら確実に3返し
+      }
+      if(baitMood){
+        if(isBaitStrong(p)&&keep3&&!(S.field&&S.field.rank==="jk")) s+=18;
+        if(play3&&S.field&&S.field.rank!=="jk"&&myN>=3) s-=26;
+      }
       if(jk){
         // ジョーカー無しの柔らかい手が残るなら温存
         if(soft.length) s-=42;
@@ -582,6 +610,15 @@ function cpuPick(){
       }
       if(rare&&!jk&&oppN>3&&st>14) s-=18;
     }
+    // 11バック中は小さい数字を攻め札として使う
+    if(backOn&&!jk&&typeof p.rank==="number"){
+      if(p.rank<=5) s+=24-p.rank*2;
+      else if(p.rank<=7) s+=8;
+      else if(p.rank>=13) s-=16;
+      if(p.rank===15) s-=8;
+      if(lead&&p.n===1&&p.rank<=5) s+=12;
+      if(!lead&&p.n===need&&p.rank<=6) s+=10;
+    }
     if(left===1){
       const last=rest[0];
       if(last&&(last.j||last.r===15||last.r===8)) s-=110;
@@ -589,6 +626,8 @@ function cpuPick(){
     if(left===2&&rest.every(c=>c.j||c.r===8||c.r===15)) s-=95;
     if(myN-oppN>=2) s+=p.n*9;
     if(oppN<=2&&p.n===1&&st<10&&!jk) s-=8;
+    // わずかなゆらぎで同じ局面でも手が変わる
+    s+=(Math.random()-0.5)*5;
     return s;
   }
   pool.sort((a,b)=>score(b)-score(a)||cpuStrength(a)-cpuStrength(b));
@@ -610,6 +649,9 @@ function cpuPick(){
       if(score(soft[0])>=bs-12) return soft[0];
     }
   }
+  // 誘い出し成功待ちフラグ
+  if(best&&isBaitStrong(best)&&keepHas3(handAfter(me,best))) S.cpuBait3=true;
+  else if(best&&best.rank===3) S.cpuBait3=false;
   return best;
 }
 function cpuTurn(){if(S.over||S.busy||S.turn!==2)return;const sl0=stuckLose(2);if(sl0){delayForbidden(sl0);return}cpuThink(()=>{const choice=cpuPick();if(!choice){if(S.field)doPassAs(2);else{const fb=allCombos(2).map(groupPlay).find(p=>p&&!legal(p,2)&&!forbFinish(p,remaining(2)));if(fb){if(S.field&&fb.rank!=="jk"&&!fb.jokers&&suitsLock(S.field,fb))setLock(fb);afterPlay(applyPlay(2,fb))}else doPassAs(2);}return}if(S.field&&choice.rank!=="jk"&&!choice.jokers&&suitsLock(S.field,choice))setLock(choice);afterPlay(applyPlay(2,choice))});}
@@ -758,7 +800,7 @@ async function startMatch(){ S.handGen=(S.handGen||0)+1; S.dealing=false; S.deal
   sync();
   if(S.mode==="cpu"&&S.turn===2)setTimeout(cpuTurn,400);
 }
-function resetTable(){S.handGen=(S.handGen||0)+1;S.hands={1:[],2:[]};S.jokers={1:null,2:null};S.field=null;S.pile=[];S.discards=[];S.lock=null;S.back=false;S.over=false;S.busy=false;S.passLock=false;S.sel=new Set();S.pending=null;S.dealVis=null;S.sawResult=false}
+function resetTable(){S.handGen=(S.handGen||0)+1;S.hands={1:[],2:[]};S.jokers={1:null,2:null};S.field=null;S.pile=[];S.discards=[];S.lock=null;S.back=false;S.cpuBait3=false;S.over=false;S.busy=false;S.passLock=false;S.sel=new Set();S.pending=null;S.dealVis=null;S.sawResult=false}
 function startSeries(len,keepPts){resetTable();S.lastWinner=null;S.seriesPts=[0,0,0];if(!keepPts){S.totals=[0,0,0];S.lifePts=[0,0,0]}S.seriesLen=3;S.round=1;S.stock=shuffle(makeFull());S.lastFlag=false;if(S.mode==="pvp"&&S.host===false)return;startMatch()}
 function snap(){return{type:"snap",stock:S.stock,discards:S.discards,jokers:S.jokers,hands:S.hands,field:S.field,pile:S.pile,trickPlays:S.trickPlays||[],fieldOwner:S.fieldOwner,lock:S.lock,back:S.back,turn:S.turn,over:S.over,pending:S.pending,lastAct:S.lastAct||null,totals:S.totals,seriesPts:S.seriesPts,lifePts:S.lifePts,round:S.round,seriesLen:S.seriesLen,rate:S.rate}}
 function showAct(m){
