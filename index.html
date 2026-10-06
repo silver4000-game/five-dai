@@ -2,10 +2,10 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-layout: safari-bar-lock-20261004c -->
-<meta name="five-dai-rev" content="20261004c-safari-lock">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261004c">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261004c">
+<!-- five-dai-rev: 20261007a-cpu-jk -->
+<meta name="five-dai-rev" content="20261007a-cpu-jk">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007a">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007a">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -464,8 +464,9 @@ function cpuStrength(play){
   if(!play) return -1;
   if(play.rank==="jk") return 20;
   const u=S.back||(S.field&&S.field.rank===11);
-  return stren({r:play.rank},u)+(play.n>1?play.n:0);
+  return stren({r:play.rank},u)+(play.n>1?play.n*0.5:0);
 }
+function usesJoker(play){return !!(play&&(play.jokers||play.rank==="jk"))}
 function handAfter(who,play){
   const ids=new Set((play.cards||[]).map(c=>c.id));
   const rest=(S.hands[who]||[]).filter(c=>!ids.has(c.id));
@@ -475,6 +476,21 @@ function handAfter(who,play){
 function leavesOnlyDead(who,play){
   const rest=handAfter(who,play);
   return rest.length>0&&rest.every(c=>c.j||c.r===8||c.r===15);
+}
+function handFlex(rest){
+  let s=0; const ranks={};
+  rest.forEach(c=>{
+    if(c.j){s+=4; return}
+    ranks[c.r]=(ranks[c.r]||0)+1;
+  });
+  Object.keys(ranks).forEach(k=>{
+    const n=ranks[k], r=+k;
+    if(n>=2) s+=n*5;
+    else if(r===8||r===15) s-=3;
+    else if(r<=7) s+=3;
+    else s+=1;
+  });
+  return s;
 }
 function cpuPick(){
   const me=2, opp=1;
@@ -494,44 +510,107 @@ function cpuPick(){
   const lead=!S.field;
   const canWin=pool.filter(p=>p.cards.length===myN);
   if(canWin.length) return canWin.sort((a,b)=>a.n-b.n)[0];
+  const nonJk=pool.filter(p=>!usesJoker(p));
+  const soft=nonJk.filter(p=>cpuStrength(p)<=12&&p.rank!==15);
   function score(p){
     let s=0;
     const left=myN-p.cards.length;
     const st=cpuStrength(p);
+    const jk=usesJoker(p);
     const rare=p.rank===15||p.rank===8||p.rank==="jk"||p.rank===11;
-    if(p.n>=2) s+=18+p.n*8;
+    const rest=handAfter(me,p);
+    const need=S.field?S.field.n:0;
+    s+=p.n*5;
+    s+=handFlex(rest)*2.2;
+    if(p.n>=2&&!jk) s+=14+p.n*7;
+    if(p.n>=2&&jk) s+=4+p.n*3;
     if(lead){
-      if(rare) s-=30;
-      if(p.rank==="jk") s-=40;
-      s+=p.n*12;
-      s-=st*0.6;
-      if(p.rank===8&&myN<=3) s+=25;
+      s-=st*0.9;
+      if(jk){
+        // 先行でジョーカーは基本温存。枚数合わせのまとめ出しや終盤のみ検討
+        if(p.rank==="jk") s-=55;
+        else if(p.n===2) s-=22;
+        else s-=8;
+        if(myN<=3) s+=28;
+        if(oppN<=2) s+=18;
+        if(p.n>=3) s+=12;
+      } else if(rare){
+        s-=28;
+        if(p.rank===15) s-=20;
+      }
+      if(p.rank===8&&myN<=4) s+=32;
+      if(p.rank===11) s-=12;
+      if(!jk&&p.n===1&&st<=8) s+=10;
     } else {
-      s+=6;
-      if(p.rank===8) s+=oppN<=3?40:12;
-      if(p.rank===3&&S.field&&S.field.rank==="jk") s+=50;
-      if(rare&&oppN>3&&st>14) s-=22;
-      if(oppN<=2) s+=st*2;
-      else s-=st*0.35;
+      s+=8;
+      if(oppN<=2){
+        s+=st*2.6;
+        if(jk) s+=18;
+      } else if(oppN<=3){
+        s+=st*1.0;
+        if(jk) s+=4;
+      } else {
+        s-=st*0.55;
+      }
+      if(p.rank===8) s+=oppN<=3?48:16;
+      if(p.rank===3&&S.field&&S.field.rank==="jk") s+=55;
+      if(jk){
+        // ジョーカー無しの柔らかい手が残るなら温存
+        if(soft.length) s-=42;
+        else if(nonJk.length){
+          const bestAlt=nonJk.reduce((a,b)=>cpuStrength(a)<=cpuStrength(b)?a:b);
+          if(cpuStrength(bestAlt)<=13) s-=20;
+          else s+=6; // 強い札しか無いならジョーカーも候補
+        } else {
+          s+=16; // ジョーカー以外に手がない
+        }
+        if(p.rank==="jk"&&need===1){
+          const fst=cpuStrength(S.field);
+          if(fst>=13||S.lock) s+=42;
+          else if(fst>=10) s+=18;
+          else s-=8;
+        }
+        if(need>=2&&p.n===need){
+          const nat=nonJk.some(q=>q.n===need);
+          if(!nat) s+=30;
+          else s-=12;
+        }
+        if(need&&p.n!==need) s-=45;
+        // 場が1枚なのにジョーカーをペアに寄せない
+        if(need===1&&p.n>=2) s-=50;
+        if(need>=2&&p.rank==="jk") s-=50;
+      }
+      if(rare&&!jk&&oppN>3&&st>14) s-=18;
     }
     if(left===1){
-      const rest=[];
-      const ids=new Set(p.cards.map(c=>c.id||(c.j&&"jk")));
-      (S.hands[me]||[]).forEach(c=>{if(!ids.has(c.id))rest.push(c)});
-      if(S.jokers[me]&&!p.jokers&&!p.cards.some(c=>c.j)) rest.push(S.jokers[me]);
       const last=rest[0];
-      if(last&&(last.j||last.r===15||last.r===8)) s-=80;
+      if(last&&(last.j||last.r===15||last.r===8)) s-=110;
     }
-    if(myN-oppN>=2) s+=p.n*10;
-    if(oppN<=2&&p.n===1&&st<10) s-=10;
+    if(left===2&&rest.every(c=>c.j||c.r===8||c.r===15)) s-=95;
+    if(myN-oppN>=2) s+=p.n*9;
+    if(oppN<=2&&p.n===1&&st<10&&!jk) s-=8;
     return s;
   }
-  pool.sort((a,b)=>score(b)-score(a));
-  const best=pool[0], bs=score(best);
-  if(S.field&&oppN>=4&&myN>=4&&bs<4&&cpuStrength(best)>=14) return null;
-  if(S.field&&!lead&&rareOnly(best)&&oppN>=3&&myN>=3&&Math.random()<0.35) return null;
+  pool.sort((a,b)=>score(b)-score(a)||cpuStrength(a)-cpuStrength(b));
+  const best=pool[0], bs=score(best), bst=cpuStrength(best);
+  if(S.field){
+    const onlyStrong=pool.every(p=>usesJoker(p)||cpuStrength(p)>=14||p.rank===8);
+    const hasSoft=soft.length>0;
+    // まだ余裕がある相手に対し、強い札しかないならパスして流れを渡す
+    if(oppN>=4&&myN>=3){
+      if(!hasSoft&&bst>=15&&bs<16&&best.rank!==8&&!usesJoker(best)) return null;
+      if(!hasSoft&&usesJoker(best)&&bst>=18&&nonJk.some(p=>p.rank===15||p.rank===8)){
+        /* 2や8で返せるならジョーカーよりそちらを検討済みのscoreに任せる */
+      }
+    }
+    if(oppN>=5&&(best.rank===15)&&onlyStrong&&!usesJoker(best)) return null;
+    // ジョーカー手と非ジョーカー手が近いなら非ジョーカー優先
+    if(usesJoker(best)&&soft.length){
+      soft.sort((a,b)=>score(b)-score(a));
+      if(score(soft[0])>=bs-12) return soft[0];
+    }
+  }
   return best;
-  function rareOnly(p){return p.rank===15||p.rank==="jk"||(p.rank===8&&oppN>3)}
 }
 function cpuTurn(){if(S.over||S.busy||S.turn!==2)return;const sl0=stuckLose(2);if(sl0){delayForbidden(sl0);return}cpuThink(()=>{const choice=cpuPick();if(!choice){if(S.field)doPassAs(2);else{const fb=allCombos(2).map(groupPlay).find(p=>p&&!legal(p,2)&&!forbFinish(p,remaining(2)));if(fb){if(S.field&&fb.rank!=="jk"&&!fb.jokers&&suitsLock(S.field,fb))setLock(fb);afterPlay(applyPlay(2,fb))}else doPassAs(2);}return}if(S.field&&choice.rank!=="jk"&&!choice.jokers&&suitsLock(S.field,choice))setLock(choice);afterPlay(applyPlay(2,choice))});}
 function doPassAs(who){if(!S.field||S.over)return;const lead=S.fieldOwner||who,held=S.field,tick=++S.tick;S.turn=lead;S.busy=true;S.lastAct={kind:"pass",who:who};showBanner("パス");setTimeout(()=>{if(tick!==S.tick||S.field!==held){S.busy=false;render();sync();return}flushWithAnim(()=>{S.busy=false;sync();const sl=checkDead();if(sl)delayForbidden(sl);})},900)}
