@@ -2,10 +2,10 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-rev: 20261007b-cpu-3jk -->
-<meta name="five-dai-rev" content="20261007b-cpu-3jk">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007b">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007b">
+<!-- five-dai-rev: 20261007c-cpu-dmg -->
+<meta name="five-dai-rev" content="20261007c-cpu-dmg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007c">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007c">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -497,6 +497,18 @@ function keepHas3(rest){return rest.some(c=>!c.j&&c.r===3)}
 function isBaitStrong(play){
   return !!(play&&play.n===1&&!usesJoker(play)&&(play.rank===15||play.rank===14));
 }
+function cpuLosingFeel(me,opp,myN,oppN,softN,flex){
+  // 勝ち筋が薄い手だと感じるか（決定論寄り、発動は別で確率）
+  let bad=0;
+  if(oppN<=1&&myN>=3) bad+=3;
+  else if(oppN<=2&&myN>=3) bad+=2;
+  if(myN-oppN>=3) bad+=2;
+  else if(myN-oppN>=2) bad+=1;
+  if(softN===0&&myN>=3) bad+=2;
+  if(flex<=2&&myN>=3) bad+=1;
+  if(oppN<=2&&!S.jokers[me]&&softN<=1) bad+=1;
+  return bad>=3;
+}
 function cpuPick(){
   const me=2, opp=1;
   const myN=remaining(me), oppN=remaining(opp);
@@ -519,8 +531,12 @@ function cpuPick(){
   const soft=nonJk.filter(p=>cpuStrength(p)<=12&&p.rank!==15);
   const backOn=!!(S.back||(S.field&&S.field.rank===11));
   const handHas3=(S.hands[me]||[]).some(c=>c.r===3);
-  // ときどきだけ3返し狙い（毎手同じ動きにしない）
-  const baitMood=handHas3&&myN>=3&&oppN>=2&&Math.random()<(S.cpuBait3?0.7:0.4);
+  const flexNow=handFlex((S.hands[me]||[]).concat(S.jokers[me]?[S.jokers[me]]:[]),backOn);
+  const feelLose=cpuLosingFeel(me,opp,myN,oppN,soft.length,flexNow);
+  // 負けそうなときだけ、ときどき軽傷優先（枚数減らし／失点最小化）
+  const damageMood=feelLose&&Math.random()<0.55;
+  // ときどきだけ3返し狙い（毎手同じ動きにしない）。軽傷モード中は抑える
+  const baitMood=!damageMood&&handHas3&&myN>=3&&oppN>=2&&Math.random()<(S.cpuBait3?0.7:0.4);
   function score(p){
     let s=0;
     const left=myN-p.cards.length;
@@ -626,6 +642,20 @@ function cpuPick(){
     if(left===2&&rest.every(c=>c.j||c.r===8||c.r===15)) s-=95;
     if(myN-oppN>=2) s+=p.n*9;
     if(oppN<=2&&p.n===1&&st<10&&!jk) s-=8;
+    if(damageMood){
+      // 勝ちに固執せず、残枚を減らして失点を抑える
+      s+=p.n*18;
+      if(left<=2) s+=22;
+      if(left===0) s+=40; // canWinは上で返すが念のため
+      // 温存より出す。ジョーカー・強い札も枚数減らしに使う
+      if(jk) s+=24;
+      if(rare&&!jk) s+=16;
+      if(p.rank===8) s+=12;
+      // 1枚ずつ残すよりまとめ出し
+      if(p.n>=2) s+=10;
+      // パス回避寄り（フォローできるなら出す）
+      if(!lead) s+=14;
+    }
     // わずかなゆらぎで同じ局面でも手が変わる
     s+=(Math.random()-0.5)*5;
     return s;
@@ -635,16 +665,17 @@ function cpuPick(){
   if(S.field){
     const onlyStrong=pool.every(p=>usesJoker(p)||cpuStrength(p)>=14||p.rank===8);
     const hasSoft=soft.length>0;
-    // まだ余裕がある相手に対し、強い札しかないならパスして流れを渡す
-    if(oppN>=4&&myN>=3){
+    // 軽傷モード中はパスして枚を残さない（出せるなら出す）
+    if(!damageMood&&oppN>=4&&myN>=3){
+      // まだ余裕がある相手に対し、強い札しかないならパスして流れを渡す
       if(!hasSoft&&bst>=15&&bs<16&&best.rank!==8&&!usesJoker(best)) return null;
       if(!hasSoft&&usesJoker(best)&&bst>=18&&nonJk.some(p=>p.rank===15||p.rank===8)){
         /* 2や8で返せるならジョーカーよりそちらを検討済みのscoreに任せる */
       }
     }
-    if(oppN>=5&&(best.rank===15)&&onlyStrong&&!usesJoker(best)) return null;
-    // ジョーカー手と非ジョーカー手が近いなら非ジョーカー優先
-    if(usesJoker(best)&&soft.length){
+    if(!damageMood&&oppN>=5&&(best.rank===15)&&onlyStrong&&!usesJoker(best)) return null;
+    // ジョーカー手と非ジョーカー手が近いなら非ジョーカー優先（軽傷時は枚数優先のscoreに任せる）
+    if(!damageMood&&usesJoker(best)&&soft.length){
       soft.sort((a,b)=>score(b)-score(a));
       if(score(soft[0])>=bs-12) return soft[0];
     }
