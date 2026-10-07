@@ -2,10 +2,10 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-rev: 20261007c-cpu-dmg -->
+<!-- five-dai-rev: 20261007d-no-round -->
 <meta name="five-dai-rev" content="20261007c-cpu-dmg">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007c">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007c">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007d">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007d">
 <script>
 (function(){
   var nav=navigator, mm=window.matchMedia;
@@ -125,7 +125,6 @@ html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 #first{background:#142c22f2;z-index:90}
 #first .w{font-size:48px;font-weight:900;letter-spacing:.16em;white-space:nowrap;padding:12px 28px;border:3px solid currentColor;border-radius:16px;background:#0a1810ee}
 #first .w.first{color:#ffb347}#first .w.second{color:#7a8cff}#first .w.draw{color:#e8c36a}
-#first .rnd-first{font-size:16px;font-weight:800;color:#e8c36a;margin-bottom:12px}
 #rules{justify-content:flex-start;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));overflow:auto;-webkit-overflow-scrolling:touch}
 #rules h1{margin:4px 0 6px;font-size:34px}
 #rules>button{margin-top:12px;flex:none}
@@ -263,7 +262,7 @@ html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 <div class="acts-wrap"><div id="rateBox"><div class="rh">rate</div><div class="rv" id="rateShow">200</div></div><div class="acts"><button class="gold" id="play">出す</button><button id="pass">パス</button></div><div id="role">先行</div></div>
 </section>
 <section id="result"><div class="box"><div id="rTitle">Win</div><div id="rLeft" class="r-left"></div><div class="row" style="margin-top:10px"><button id="next">次のゲーム</button><button id="final">最終結果</button><button id="again">もう1回</button><button id="endShow">終了</button><button id="home">モード選択</button></div></div></section>
-<section id="first"><div class="rnd-first" id="firstRnd">1回戦目</div><div class="w draw" id="firstW">抽選</div><div class="s" id="firstS"></div></section>
+<section id="first"><div class="w draw" id="firstW">抽選</div><div class="s" id="firstS"></div></section>
 <div id="discView"><div class="hint">捨札（タップで閉じる）</div><div id="discList"></div></div>
 <div id="ordView"><div class="hint">出した順（タップで閉じる）</div><div id="ordList"></div></div>
 <div id="ask">
@@ -788,7 +787,7 @@ function bootChat(sendFn){
 
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function pickFirst(fixed){S.inFirst=true;$("firstRnd").textContent=S.round+"回戦目";
+async function pickFirst(fixed){S.inFirst=true;
   if(fixed==null){
     if(S.lastWinner) S.turn=S.lastWinner===1?2:1;
     else S.turn=Math.random()<.5?1:2;
