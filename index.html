@@ -2,8 +2,8 @@
 <html lang="ja"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- five-dai-rev: 20261007d-no-round -->
-<meta name="five-dai-rev" content="20261007d-no-round">
+<!-- five-dai-rev: 20261013a-round-label -->
+<meta name="five-dai-rev" content="20261013a-round-label">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261007d">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20261007d">
 <script>
@@ -248,7 +248,7 @@ html.no-bar #chatPanel{bottom:calc(68px + var(--safari-bar, 83px))}
 </section>
 <section id="room"><h1>部屋</h1><p class="hint">合言葉は3文字以上</p><input id="code" maxlength="6" placeholder="あいことば" /><div class="row" style="margin-top:10px"><button id="mk">部屋を作る</button><button id="jn">入る</button></div><p class="hint" id="roomSt"></p><button id="roomBack" style="margin-top:14px">戻る</button></section>
 <section id="game">
-<div class="topbar"><div><b id="oppName">相手</b> <span id="oppN">5</span>枚</div><div><button id="retry" type="button" style="min-height:40px;min-width:88px;font-size:13px;position:relative;z-index:6">やり直し</button></div></div>
+<div class="topbar"><div><b id="oppName">1戦目</b><span id="oppN" hidden>5</span></div><div><button id="retry" type="button" style="min-height:40px;min-width:88px;font-size:13px;position:relative;z-index:6">やり直し</button></div></div>
 <div class="opp-hand" id="oppHand"></div>
 <div class="board">
 <div class="meta" id="info">—</div><div class="field" id="field"></div>
@@ -329,7 +329,7 @@ function elCard(c,click){const d=document.createElement("div");d.className="card
 if(click)d.onclick=click;if(click&&S.sel.has(c.id||("jk"+c.owner)))d.classList.add("sel");return d}
 function remaining(w){return S.hands[w].length+(S.jokers[w]?1:0)}
 function render(){
-  $("oppName").textContent=S.mode==="cpu"&&S.me===1?"コンピュータ":"相手";
+  $("oppName").textContent=(S.round||1)+"戦目";
   const oppAll=S.hands[S.me===1?2:1], visN=S.dealVis?S.dealVis.n:99, opp=oppAll.slice(0,visN);
   $("oppN").textContent=remaining(S.me===1?2:1);
   const oh=$("oppHand");oh.innerHTML="";
